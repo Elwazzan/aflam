@@ -6,6 +6,10 @@
     <title>ultimate - أفلام ومسلسلات</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- مشغل HLS.js لتشغيل صيغ البث المباشر m3u8 و TS -->
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+
     <style>
         :root {
             --primary: #e50914;
@@ -499,37 +503,38 @@
             overflow: hidden;
         }
 
-        /* ========== PLAYER MODAL ========== */
+        /* ========== ADVANCED UNIVERSAL PLAYER ========== */
         .modal-backdrop {
             display: none; position: fixed;
-            inset: 0; background: rgba(0,0,0,0.94);
+            inset: 0; background: rgba(0,0,0,0.95);
             z-index: 10000; justify-content: center;
             align-items: center; padding: 15px;
+            backdrop-filter: blur(10px);
         }
 
         .modal-backdrop.active { display: flex !important; }
 
         .player-modal {
             background: #0d0d0d; border-radius: 20px;
-            width: 100%; max-width: 950px;
+            width: 100%; max-width: 1000px;
             overflow: hidden;
             animation: scaleIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            border: 1px solid rgba(229, 9, 20, 0.15);
-            box-shadow: 0 30px 80px rgba(0,0,0,0.7);
+            border: 1px solid rgba(229, 9, 20, 0.25);
+            box-shadow: 0 30px 80px rgba(0,0,0,0.8);
         }
 
         .player-header {
             display: flex; justify-content: space-between;
-            align-items: center; padding: 18px 22px;
-            background: rgba(26, 26, 46, 0.6);
-            border-bottom: 1px solid rgba(255,255,255,0.05);
+            align-items: center; padding: 16px 24px;
+            background: rgba(26, 26, 46, 0.85);
+            border-bottom: 1px solid rgba(255,255,255,0.06);
         }
 
         .player-title { font-size: 18px; font-weight: 700; }
 
         .close-btn-modal {
             width: 38px; height: 38px; border-radius: 10px;
-            background: rgba(229, 9, 20, 0.12);
+            background: rgba(229, 9, 20, 0.15);
             border: none; color: var(--primary);
             font-size: 16px; cursor: pointer;
             transition: all 0.3s ease;
@@ -541,39 +546,59 @@
         .video-container {
             position: relative; width: 100%;
             padding-top: 56.25%; background: #000;
+            overflow: hidden;
         }
 
         .video-container video,
         .video-container iframe {
             position: absolute; top: 0; left: 0;
             width: 100%; height: 100%; border: none;
+            outline: none;
         }
 
-        .player-info { padding: 20px 22px; }
+        .player-info { padding: 22px 25px; }
         .player-meta { display: flex; gap: 15px; margin-bottom: 12px; flex-wrap: wrap; }
 
         .meta-item {
             display: flex; align-items: center; gap: 6px;
             font-size: 13px; color: var(--text-secondary);
-            background: rgba(255,255,255,0.04);
+            background: rgba(255,255,255,0.05);
             padding: 5px 12px; border-radius: 8px;
         }
 
         .meta-item i { color: var(--primary); }
         .player-description { color: var(--text-secondary); font-size: 13.5px; line-height: 1.8; margin-top: 8px; }
 
+        .player-controls-row {
+            display: flex; gap: 12px; align-items: center;
+            margin-top: 18px; flex-wrap: wrap;
+        }
+
         .download-btn {
             display: inline-flex; align-items: center; gap: 8px;
             background: var(--gradient-1); color: white;
-            padding: 12px 28px; border-radius: 12px;
+            padding: 12px 26px; border-radius: 12px;
             text-decoration: none; font-weight: 700;
             font-family: 'Cairo', sans-serif;
-            margin-top: 18px; transition: all 0.3s ease;
+            transition: all 0.3s ease;
             font-size: 14px;
             box-shadow: 0 4px 15px rgba(229,9,20,0.3);
         }
 
         .download-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(229, 9, 20, 0.5); }
+
+        .open-external-btn {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: rgba(255, 255, 255, 0.08); color: white;
+            padding: 12px 22px; border-radius: 12px;
+            text-decoration: none; font-weight: 600;
+            font-family: 'Cairo', sans-serif;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .open-external-btn:hover { background: rgba(255, 255, 255, 0.15); }
 
         /* ========== LOGIN ========== */
         .login-overlay {
@@ -710,7 +735,6 @@
             color: var(--primary);
         }
 
-        /* شبكة متجاوبة ذكية للحقول */
         .form-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -937,7 +961,6 @@
         ::-webkit-scrollbar-track { background: var(--bg-dark); }
         ::-webkit-scrollbar-thumb { background: var(--primary-dark); border-radius: 4px; }
 
-        /* ========== MEDIA QUERIES FOR ULTIMATE RESPONSIVENESS ========== */
         @media (max-width: 992px) {
             .admin-content { padding: 20px; }
             .add-movie-section { padding: 22px; }
@@ -955,7 +978,6 @@
             .movies-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px; }
             .movie-poster { height: 230px; }
             
-            /* Admin Mobile Layout */
             .admin-header { padding: 12px 18px; flex-wrap: wrap; }
             .admin-title { font-size: 17px; }
             .admin-content { padding: 15px 12px 50px; }
@@ -1069,7 +1091,7 @@
         </button>
     </footer>
 
-    <!-- PLAYER MODAL -->
+    <!-- ADVANCED UNIVERSAL PLAYER MODAL -->
     <div class="modal-backdrop" id="playerModal">
         <div class="player-modal">
             <div class="player-header">
@@ -1084,7 +1106,10 @@
                     <div class="meta-item"><i class="fas fa-star"></i><span id="playerRating">0</span></div>
                 </div>
                 <p class="player-description" id="playerDesc">وصف الفيلم</p>
-                <a href="#" class="download-btn" id="downloadBtn" target="_blank"><i class="fas fa-download"></i> تحميل أو مشاهدة خارجية</a>
+                <div class="player-controls-row">
+                    <a href="#" class="download-btn" id="downloadBtn" target="_blank"><i class="fas fa-download"></i> تحميل الفيلم</a>
+                    <a href="#" class="open-external-btn" id="externalBtn" target="_blank"><i class="fas fa-external-link-alt"></i> فتح في نافذة مستقلة</a>
+                </div>
             </div>
         </div>
     </div>
@@ -1141,7 +1166,10 @@
                         <div class="form-group-admin"><label>سنة الإنتاج</label><input type="number" id="movieYear" placeholder="2026" min="1900" max="2035"></div>
                         <div class="form-group-admin"><label>التقييم (من 10)</label><input type="number" id="movieRating" placeholder="8.5" step="0.1" min="0" max="10"></div>
                         <div class="form-group-admin form-group-full"><label>وصف الفيلم</label><textarea id="movieDesc" placeholder="أدخل وصف الفيلم..."></textarea></div>
-                        <div class="form-group-admin form-group-full"><label>رابط الفيديو</label><input type="url" id="movieVideo" placeholder="https://www.youtube.com/watch?v=..."></div>
+                        <div class="form-group-admin form-group-full">
+                            <label>رابط الفيديو (يدعم: mp4, m3u8, mkv, Google Drive, YouTube, Vimeo, سيرفرات Embed)</label>
+                            <input type="url" id="movieVideo" placeholder="https://example.com/video.mp4 أو رابط يوتيوب أو درايف">
+                        </div>
                         <div class="form-group-admin form-group-full">
                             <label>صورة الفيلم (تظهر كخلفية في السلايدر والبوستر)</label>
                             <div class="image-upload-area" id="imageUploadArea">
@@ -1186,6 +1214,7 @@
         var dbConnected = false;
         var sliderIndex = 0;
         var sliderTimer = null;
+        var hlsPlayerInstance = null; // مشغل HLS النشط
 
         // ========== INIT ==========
         function initSupabase() {
@@ -1578,41 +1607,156 @@
             renderMovies(f);
         }
 
-        // ========== PLAYER ==========
+        // ═════════════════════════════════════════════════════════════════
+        //  🚀 ADVANCED UNIVERSAL MEDIA PLAYER ENGINE (ALL FORMATS SUPPORT)
+        // ═════════════════════════════════════════════════════════════════
         function openPlayer(id) {
             var m = allMovies.find(function(x){ return String(x.id) === String(id); });
             if(!m) return;
+
             document.getElementById('playerTitle').textContent = m.title;
             document.getElementById('playerYear').textContent = m.year || 'غير محدد';
             document.getElementById('playerGenre').textContent = m.genre || 'غير محدد';
             document.getElementById('playerRating').textContent = m.rating || '-';
-            document.getElementById('playerDesc').textContent = m.description || 'لا يوجد وصف متاح';
+            document.getElementById('playerDesc').textContent = m.description || 'لا يوجد وصف متاح لهذا الفيلم';
             
-            var vc = document.getElementById('videoContainer'), dl = document.getElementById('downloadBtn');
-            if(m.video_url) {
-                var yt = m.video_url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/))([a-zA-Z0-9_-]{11})/);
-                if(yt) vc.innerHTML = `<iframe src="https://www.youtube.com/embed/${yt[1]}?autoplay=1&rel=0" frameborder="0" allowfullscreen allow="autoplay"></iframe>`;
-                else vc.innerHTML = `<video controls autoplay><source src="${esc(m.video_url)}" type="video/mp4"></video>`;
-                dl.href = m.video_url;
-                dl.style.display = 'inline-flex';
-            } else {
+            var vc = document.getElementById('videoContainer');
+            var dl = document.getElementById('downloadBtn');
+            var ext = document.getElementById('externalBtn');
+
+            // تفريغ أي مشغل سابق
+            destroyCurrentPlayer();
+
+            var rawUrl = (m.video_url || '').trim();
+
+            if(!rawUrl) {
                 vc.innerHTML = `
                     <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;color:var(--text-secondary)">
-                        <i class="fas fa-video-slash" style="font-size:55px;margin-bottom:18px;color:var(--primary);opacity:0.4"></i>
-                        <p>لا يوجد رابط فيديو متوفر حالياً</p>
+                        <i class="fas fa-video-slash" style="font-size:55px;margin-bottom:15px;color:var(--primary);opacity:0.5"></i>
+                        <p style="font-size:16px;">لم يتم توفير رابط فيديو لهذا الفيلم بعد</p>
                     </div>`;
                 dl.style.display = 'none';
+                ext.style.display = 'none';
+            } else {
+                dl.href = rawUrl;
+                dl.style.display = 'inline-flex';
+                ext.href = rawUrl;
+                ext.style.display = 'inline-flex';
+
+                setupUniversalPlayer(vc, rawUrl);
             }
+
             var modal = document.getElementById('playerModal');
-            modal.style.display = 'flex'; modal.classList.add('active');
+            modal.style.display = 'flex';
+            modal.classList.add('active');
             document.body.style.overflow = 'hidden';
+        }
+
+        function setupUniversalPlayer(container, url) {
+            // 1. YouTube Detector
+            var ytMatch = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([a-zA-Z0-9_-]{11})/);
+            if(ytMatch) {
+                container.innerHTML = `<iframe src="https://www.youtube.com/embed/${ytMatch[1]}?autoplay=1&rel=0&playsinline=1" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+                return;
+            }
+
+            // 2. Google Drive Detector
+            var driveMatch = url.match(/drive\.google\.com\/(?:file\/d\/|open\?id=)([a-zA-Z0-9_-]+)/);
+            if(driveMatch) {
+                var driveEmbed = `https://drive.google.com/file/d/${driveMatch[1]}/preview`;
+                container.innerHTML = `<iframe src="${driveEmbed}" allow="autoplay; fullscreen" allowfullscreen></iframe>`;
+                return;
+            }
+
+            // 3. Vimeo Detector
+            var vimeoMatch = url.match(/vimeo\.com\/(?:channels\/(?:\w+\/)?|groups\/([^\/]*)\/videos\/|album\/(\d+)\/video\/|video\/|)(\d+)/);
+            if(vimeoMatch && vimeoMatch[3]) {
+                container.innerHTML = `<iframe src="https://player.vimeo.com/video/${vimeoMatch[3]}?autoplay=1" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>`;
+                return;
+            }
+
+            // 4. Dailymotion Detector
+            var dmMatch = url.match(/(?:dailymotion\.com\/video\/|dai\.ly\/)([a-zA-Z0-9]+)/);
+            if(dmMatch) {
+                container.innerHTML = `<iframe src="https://www.dailymotion.com/embed/video/${dmMatch[1]}?autoplay=1" allow="autoplay; fullscreen" allowfullscreen></iframe>`;
+                return;
+            }
+
+            // 5. Iframe / Embed Code أو روابط التضمين السحابي
+            if(url.toLowerCase().indexOf('/embed') !== -1 || url.toLowerCase().indexOf('streamtape') !== -1 || url.toLowerCase().indexOf('dood') !== -1 || url.toLowerCase().indexOf('ok.ru') !== -1) {
+                container.innerHTML = `<iframe src="${esc(url)}" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" allowfullscreen></iframe>`;
+                return;
+            }
+
+            // 6. ملفات الفيديو المباشرة وبث HLS (.m3u8, .mp4, .webm, .mkv, .mov, etc)
+            var videoEl = document.createElement('video');
+            videoEl.controls = true;
+            videoEl.autoplay = true;
+            videoEl.playsInline = true;
+            videoEl.style.width = '100%';
+            videoEl.style.height = '100%';
+            videoEl.style.backgroundColor = '#000';
+            videoEl.setAttribute('controlsList', 'nodownload');
+
+            var isHls = url.indexOf('.m3u8') !== -1 || url.indexOf('application/x-mpegURL') !== -1;
+
+            if(isHls) {
+                if (window.Hls && window.Hls.isSupported()) {
+                    hlsPlayerInstance = new window.Hls({
+                        enableWorker: true,
+                        lowLatencyMode: true
+                    });
+                    hlsPlayerInstance.loadSource(url);
+                    hlsPlayerInstance.attachMedia(videoEl);
+                    hlsPlayerInstance.on(window.Hls.Events.MANIFEST_PARSED, function () {
+                        videoEl.play().catch(function(){});
+                    });
+                    hlsPlayerInstance.on(window.Hls.Events.ERROR, function (event, data) {
+                        if (data.fatal) {
+                            console.warn('HLS stream fatal error, falling back to direct play');
+                            videoEl.src = url;
+                        }
+                    });
+                } else if (videoEl.canPlayType('application/vnd.apple.mpegurl')) {
+                    // دعم أصلي في متصفحات سفاري (Safari) و iOS
+                    videoEl.src = url;
+                } else {
+                    container.innerHTML = `<iframe src="${esc(url)}" allowfullscreen></iframe>`;
+                    return;
+                }
+            } else {
+                // MP4, WEBM, OGV, MKV
+                videoEl.src = url;
+            }
+
+            container.innerHTML = '';
+            container.appendChild(videoEl);
+            videoEl.play().catch(function(){});
+        }
+
+        function destroyCurrentPlayer() {
+            var vc = document.getElementById('videoContainer');
+            if(hlsPlayerInstance) {
+                hlsPlayerInstance.destroy();
+                hlsPlayerInstance = null;
+            }
+            if(vc) {
+                var vid = vc.querySelector('video');
+                if(vid) {
+                    vid.pause();
+                    vid.removeAttribute('src');
+                    vid.load();
+                }
+                vc.innerHTML = '';
+            }
         }
 
         function closePlayer() {
             var m = document.getElementById('playerModal');
-            m.classList.remove('active'); m.style.display = 'none';
+            m.classList.remove('active');
+            m.style.display = 'none';
             document.body.style.overflow = '';
-            document.getElementById('videoContainer').innerHTML = '';
+            destroyCurrentPlayer();
         }
 
         // ========== IMAGE ==========
@@ -1650,13 +1794,11 @@
             var existingImg = document.getElementById('existingImageUrl').value;
             var imgFile = document.getElementById('imageInput').files[0];
 
-            // رفع الصورة إذا اختار المستخدم ملف جديد
             if(imgFile){
                 var up = await uploadImage(imgFile);
                 if(up) imgUrl = up;
             }
 
-            // إذا لم يكتب رابط جديد ولم يرفع ملف جديد في حالة التعديل، نحتفظ بالرابط القديم
             if(!imgUrl && editId && existingImg) {
                 imgUrl = existingImg;
             }
@@ -1677,7 +1819,6 @@
             try {
                 var r;
                 if(editId) {
-                    // معالجة نوع المعرف للتأكد من قبوله سواء كان UUID أو Integer
                     var parsedId = (!isNaN(editId) && !isNaN(parseFloat(editId))) ? Number(editId) : editId;
                     r = await db.from('movies').update(data).eq('id', parsedId);
                 } else {
@@ -1728,7 +1869,6 @@
             c.querySelectorAll('.btn-delete').forEach(function(b){ b.addEventListener('click', function(){ deleteMovie(b.getAttribute('data-id'), b.getAttribute('data-t')); }); });
         }
 
-        // ========== EDIT MOVIE (LOAD DATA PROPERLY) ==========
         function editMovie(id) {
             var m = allMovies.find(function(x){ return String(x.id) === String(id); });
             if(!m) return;
@@ -1756,7 +1896,6 @@
             document.getElementById('submitBtnText').textContent = 'تحديث البيانات';
             document.getElementById('submitIcon').className = 'fas fa-save';
 
-            // التمرير السلس لأول نموذج التعديل
             var panel = document.getElementById('adminPanel');
             panel.scrollTo({top: 0, behavior: 'smooth'});
         }
